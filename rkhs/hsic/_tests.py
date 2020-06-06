@@ -3,7 +3,7 @@ import unittest
 
 import numpy as np
 
-from rkhs.hsic import _hsic_naive, hsic
+from rkhs.hsic.hsic import _hsic_naive, hsic
 
 
 def test_run(fn, n_samples=1000, lambda_=0.3, n_iter=10, seed=53):

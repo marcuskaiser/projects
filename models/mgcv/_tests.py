@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from mgcv import MGCV
+from models import MGCV
 
 
 class Test1(unittest.TestCase):
