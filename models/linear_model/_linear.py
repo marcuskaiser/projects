@@ -54,7 +54,7 @@ def fit_linear_lbfgs(x, y, loss_type='l2', quantile=None,
 
     w_star : array-like, shape (n_features, n_targets) or (n_features)
         Weights for linear model before scaling back to original scale.
-        These weights can be used to e.g. calculate feature importance.
+        These weights can be used to e.g. calculate feature importances.
 
     bias : array-like, shape (n_targets,)
         Bias term.

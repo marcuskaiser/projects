@@ -94,6 +94,12 @@ class LinearModel:
         out_ = x @ self._weights + self._bias
         return out_
 
+    @property
+    def weights(self):
+        assert self._weights is not None, 'Call .fit() first!'
+        return self._weights
+
+    @property
     def feature_importance(self):
         """
         Returns the feature importance equal to the absolute value of the
