@@ -4,13 +4,8 @@ from scipy.optimize import minimize
 LOSS_TYPES = ['l1', 'median', 'mae', 'l2', 'mse', 'quantile']
 
 
-def linear_loss_fn(w, x, y, loss_type, quantile, l1_w, l2_w):
-    """
-    Assemble loss function. Create L-BFGS objective using ``partial``.
-    """
-    w = w.reshape((x.shape[1], y.shape[1]))
+def _residual_loss_fn(x, y, w, loss_type, quantile):
     res = y - x @ w
-
     if loss_type.lower() in ['l2', 'mse']:
         loss_ = np.mean(res ** 2) / 2
         d_loss_ = - x.T @ res / res.shape[0]
@@ -23,16 +18,19 @@ def linear_loss_fn(w, x, y, loss_type, quantile, l1_w, l2_w):
         d_loss_ = - x.T @ quantiles / res.shape[0]
     else:
         raise ValueError(f'Unknown loss_type=`{quantile}`!')
+    return loss_, d_loss_
 
+
+def _regularization_loss(w, l1_w, l2_w):
+    loss_ = 0
+    d_loss_ = np.zeros_like(w)
     if l1_w > 0.0:
         loss_ += l1_w * np.abs(w).sum()
-        d_loss_[:w.shape[0], :] += l1_w * np.sign(w)
-
+        d_loss_ += l1_w * np.sign(w)
     if l2_w > 0.0:
         loss_ += l2_w * (w ** 2).sum() / 2
-        d_loss_[:w.shape[0], :] += l2_w * w
-
-    return loss_, d_loss_.ravel()
+        d_loss_ += l2_w * w
+    return loss_, d_loss_
 
 
 def scale_std(x, scale=True):

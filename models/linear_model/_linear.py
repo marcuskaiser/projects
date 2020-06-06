@@ -2,8 +2,22 @@ from functools import partial
 
 import numpy as np
 
-from models.linear_model.utils import (lbfgs_fit, linear_loss_fn, LOSS_TYPES,
-                                       scale_std)
+from models.linear_model.utils import (_regularization_loss, _residual_loss_fn,
+                                       lbfgs_fit, LOSS_TYPES, scale_std)
+
+
+def linear_loss_fn(w, x, y, loss_type, quantile, l1_w, l2_w):
+    """
+    Assemble loss function. Create L-BFGS objective using ``partial``.
+    """
+    w = w.reshape((x.shape[1], y.shape[1]))
+
+    loss_, d_loss_ = _residual_loss_fn(x, y, w, loss_type, quantile)
+    if l1_w > 0.0 or l2_w > 0.0:
+        loss_w, d_loss_w = _regularization_loss(w, l1_w, l2_w)
+        loss_ += loss_w
+        d_loss_ += d_loss_w
+    return loss_, d_loss_.ravel()
 
 
 def fit_linear_lbfgs(x, y, loss_type='l2', quantile=None,
