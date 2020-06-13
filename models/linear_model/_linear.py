@@ -6,7 +6,7 @@ from models.linear_model.utils import (_regularization_loss, _residual_loss_fn,
                                        lbfgs_fit, LOSS_TYPES, scale_std)
 
 
-def linear_loss_fn(w, x, y, loss_type, quantile, l1_w, l2_w):
+def _linear_loss_fn(w, x, y, loss_type, quantile, l1_w, l2_w):
     """
     Assemble loss function. Create L-BFGS objective using ``partial``.
     """
@@ -98,7 +98,7 @@ def fit_linear_lbfgs(x, y, loss_type='l2', quantile=None,
         x = np.hstack((x, np.ones((x.shape[0], 1))))
 
     # Solve convex optimization problem:
-    loss = partial(linear_loss_fn, x=x, y=y, loss_type=loss_type,
+    loss = partial(_linear_loss_fn, x=x, y=y, loss_type=loss_type,
                    quantile=quantile, l1_w=l1_w, l2_w=l2_w)
     w_init = np.zeros((x.shape[1], y.shape[1]))
     if fit_bias is True:

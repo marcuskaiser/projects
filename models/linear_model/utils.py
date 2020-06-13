@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.optimize import minimize
 
-LOSS_TYPES = ['l1', 'median', 'mae', 'l2', 'mse', 'quantile']
+LOSS_TYPES = ['l1', 'median', 'mae', 'l2', 'mse', 'quantile', 'q']
 
 
 def _residual_loss_fn(x, y, w, loss_type, quantile):
@@ -12,7 +12,7 @@ def _residual_loss_fn(x, y, w, loss_type, quantile):
     elif loss_type.lower() in ['l1', 'median', 'mae']:
         loss_ = np.abs(res).mean()
         d_loss_ = - x.T @ np.sign(res) / res.shape[0]
-    elif loss_type.lower() == 'quantile':
+    elif loss_type.lower() in ['quantile', 'q']:
         quantiles = np.where(res < 0, quantile - 1, quantile)
         loss_ = (quantiles * res).mean()
         d_loss_ = - x.T @ quantiles / res.shape[0]
@@ -43,10 +43,10 @@ def scale_std(x, scale=True):
     return x, x_std
 
 
-def lbfgs_fit(loss_fn, w_init):
+def lbfgs_fit(loss_fn, w_init, grad=True):
     """ Simple wrapper for L-BFGS scipy routine. """
     original_shape = w_init.shape
     w_init = w_init.ravel()
-    w_star = minimize(fun=loss_fn, x0=w_init, method='L-BFGS-B', jac=True).x
+    w_star = minimize(fun=loss_fn, x0=w_init, method='L-BFGS-B', jac=grad).x
     w_star = w_star.reshape(original_shape)
     return w_star
