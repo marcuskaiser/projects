@@ -1,5 +1,7 @@
 # Collection of smaller projects
 
-- `rkhs` contains an efficient Python implementation of the **Hilbert-Schmidt Independence Criterion (HSIC)**.
+- 'independence_tests' contains efficient implementation of independence tests.
+- 'models' contains
 
-- `mgcv` contains a (simple, `rpy2 ` based) wrapper for the `mgcv` R package, for fitting **Generalized Additive Models (GAMs)**.
+  - 'linear_model', a basic and modular implementation of linear regression routines, which can in particular be used to fit linear quantile regression models.
+  - `mgcv` contains a (simple, `rpy2` based) wrapper for the `mgcv` R package, for fitting **Generalized Additive Models (GAMs)**.
