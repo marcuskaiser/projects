@@ -133,7 +133,7 @@ def _hsic_kernel(k_x, k_y, scaled=False):
     return hsic_score
 
 
-def hsic(x, y, scaled=False, sigma=None, kernel='gaussian'):
+def hsic(x, y, scale=False, sigma=None, kernel='gaussian'):
     """
     (Fairly efficient) Python implementation of HSIC
     (Hilbert-Schmidt Independence Criterion):
@@ -161,7 +161,7 @@ def hsic(x, y, scaled=False, sigma=None, kernel='gaussian'):
     y : array-like, shape (n_samples,)
         Second vector to be compared.
 
-    scaled : bool, optional (default=False)
+    scale : bool, optional (default=False)
         If true, the result is scaled (from 0 to 1) as
 
         .. math::
@@ -188,11 +188,11 @@ def hsic(x, y, scaled=False, sigma=None, kernel='gaussian'):
     kernel_fn = KERNEL_MAP[kernel]
     k_x = kernel_fn(x, sigma=sigma)
     k_y = kernel_fn(y, sigma=sigma)
-    hsic_score = _hsic_kernel(k_x, k_y, scaled)
+    hsic_score = _hsic_kernel(k_x, k_y, scale)
     return hsic_score
 
 
-def _hsic_naive(x, y, scaled=False, sigma=None, kernel='gaussian'):
+def _hsic_naive(x, y, scale=False, sigma=None, kernel='gaussian'):
     """
     Naive (slow) implementation of HSIC (Hilbert-Schmidt Independence
     Criterion). This function is only used to assert correct results of the
@@ -206,7 +206,7 @@ def _hsic_naive(x, y, scaled=False, sigma=None, kernel='gaussian'):
     y : array-like, shape (n_samples,)
         Second vector to be compared.
 
-    scaled : bool, optional (default=False)
+    scale : bool, optional (default=False)
         If true, the result is scaled (from 0 to 1) as
 
         .. math::
@@ -233,7 +233,7 @@ def _hsic_naive(x, y, scaled=False, sigma=None, kernel='gaussian'):
     k_y = kernel_fn(y, sigma=sigma) @ h
     trace_xy = np.sum(k_x.T * k_y)
 
-    if scaled:
+    if scale:
         trace_xx = np.sum(k_x.T * k_x)
         trace_yy = np.sum(k_y.T * k_y)
         hsic_score = trace_xy / (trace_xx * trace_yy) ** 0.5
