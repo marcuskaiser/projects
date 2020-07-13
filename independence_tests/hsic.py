@@ -1,108 +1,73 @@
 import numpy as np
 
 
-def _gaussian_kernel(x, y=None, sigma=None, diag_noise=None):
+def _gaussian_kernel(x, sigma=None):
     """
     Gaussian / RBF kernel. Allows to add extra noise to the diagonal in order
     to make the resulting Gram matrix positive definite.
-    The returned matrix is ``k(x, y)`` if ``y`` is provided, and ``k(x, x)``
-    otherwise.
+    The returned matrix is ``k(x, x)``.
 
     Parameters
     ----------
     x : array-like, shape (n_samples,)
         Vector for which the kernel Gram matrix will be calculated.
 
-    y : array-like or None, optional (default=None), shape (n_samples,)
-        Optional, second vector for calculating the kernel Gram matrix.
-
     sigma : float or None, optional (default=None)
         Bandwidth for the kernel. By default, the median euclidean
         distance between points is used.
-
-    diag_noise : float or None, optional (default=None)
-        Additional noise factor added to the diagonal in order to make the
-        resulting Gram matrix positive definite.
 
     Returns
     -------
     k_ : array-like
         Resulting Gram matrix.
     """
-    if y is None:
-        y = x
-    d = x - y[:, None]
+    d = x - x[:, None]
     if sigma is None:
         sigma = np.median(d[d > 0])
 
     k_ = np.exp(-0.5 * (d / sigma) ** 2)
-    if diag_noise is None:
-        return k_
-
-    assert diag_noise >= 0.0, f'noise >=0 required. Got: {diag_noise}!'
-    np.fill_diagonal(k_, k_.diagonal() + diag_noise)
     return k_
 
 
-def _laplace_kernel(x, y=None, sigma=None, diag_noise=None):
+def _laplace_kernel(x, sigma=None):
     """
     Laplace kernel. Allows to add extra noise to the diagonal in order
     to make the resulting Gram matrix positive definite.
-    The returned matrix is ``k(x, y)`` if ``y`` is provided, and ``k(x, x)``
-    otherwise.
+    The returned matrix is ``k(x, x)``.
 
     Parameters
     ----------
     x : array-like, shape (n_samples,)
         Vector for which the kernel Gram matrix will be calculated.
 
-    y : array-like or None, optional (default=None), shape (n_samples,)
-        Optional, second vector for calculating the kernel Gram matrix.
-
     sigma : float or None, optional (default=None)
         Bandwidth for the kernel. By default, the median euclidean
         distance between points is used.
-
-    diag_noise : float or None, optional (default=None)
-        Additional noise factor added to the diagonal in order to make the
-        resulting Gram matrix positive definite.
 
     Returns
     -------
     k_ : array-like
         Resulting Gram matrix.
     """
-    if y is None:
-        y = x
-    d = x - y[:, None]
+    d = x - x[:, None]
     if sigma is None:
         sigma = np.median(d[d > 0])
 
     k_ = np.exp(- 1.0 * np.abs(d / sigma))
-    if diag_noise is None:
-        return k_
-
-    assert diag_noise >= 0.0, f'noise >=0 required. Got: {diag_noise}!'
-    np.fill_diagonal(k_, k_.diagonal() + diag_noise)
     return k_
 
 
-def _rational_quadratic_kernel(x, y=None, alpha=1.0, sigma=None,
-                               diag_noise=None):
+def _rational_quadratic_kernel(x, alpha=1.0, sigma=None):
     """
     Rational Quadratic kernel. Can be interpreted as a mixture of RBF kernels.
     Allows to add extra noise to the diagonal in order to make the resulting
     Gram matrix positive definite.
-    The returned matrix is ``k(x, y)`` if ``y`` is provided, and ``k(x, x)``
-    otherwise.
+    The returned matrix is ``k(x, x)``.
 
     Parameters
     ----------
     x : array-like, shape (n_samples,)
         Vector for which the kernel Gram matrix will be calculated.
-
-    y : array-like or None, optional (default=None), shape (n_samples,)
-        Optional, second vector for calculating the kernel Gram matrix.
 
     alpha : float, (default=1.0)
         Scale mixture parameter.
@@ -111,27 +76,16 @@ def _rational_quadratic_kernel(x, y=None, alpha=1.0, sigma=None,
         Bandwidth for the kernel. By default, the median euclidean
         distance between points is used.
 
-    diag_noise : float or None, optional (default=None)
-        Additional noise factor added to the diagonal in order to make the
-        resulting Gram matrix positive definite.
-
     Returns
     -------
     k_ : array-like
         Resulting Gram matrix.
     """
-    if y is None:
-        y = x
-    d = x - y[:, None]
+    d = x - x[:, None]
     if sigma is None:
         sigma = np.median(d[d > 0])
 
     k_ = (1 + (d / sigma) ** 2 / (2.0 * alpha)) ** (-alpha)
-    if diag_noise is None:
-        return k_
-
-    assert diag_noise >= 0.0, f'noise >=0 required. Got: {diag_noise}!'
-    np.fill_diagonal(k_, k_.diagonal() + diag_noise)
     return k_
 
 
@@ -181,8 +135,8 @@ def _hsic_kernel(k_x, k_y, scaled=False):
 
 def hsic(x, y, scaled=False, sigma=None, kernel='gaussian'):
     """
-    (Fairly efficient) implementation of HISC (Hilbert-Schmidt Independence
-    Criterion):
+    (Fairly efficient) Python implementation of HSIC
+    (Hilbert-Schmidt Independence Criterion):
 
     .. math::
         HSIC = (m - 1)^{-1} tr(k_x k_y}
@@ -232,14 +186,15 @@ def hsic(x, y, scaled=False, sigma=None, kernel='gaussian'):
         http://www.gatsby.ucl.ac.uk/~gretton/papers/GreBouSmoSch05.pdf
     """
     kernel_fn = KERNEL_MAP[kernel]
-    k_x, k_y = kernel_fn(x, sigma=sigma), kernel_fn(y, sigma=sigma)
+    k_x = kernel_fn(x, sigma=sigma)
+    k_y = kernel_fn(y, sigma=sigma)
     hsic_score = _hsic_kernel(k_x, k_y, scaled)
     return hsic_score
 
 
 def _hsic_naive(x, y, scaled=False, sigma=None, kernel='gaussian'):
     """
-    Naive (slow) implementation of HISC (Hilbert-Schmidt Independence
+    Naive (slow) implementation of HSIC (Hilbert-Schmidt Independence
     Criterion). This function is only used to assert correct results of the
     faster method ``hsic``.
 

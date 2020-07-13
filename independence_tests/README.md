@@ -15,7 +15,7 @@ which ranges from 0.0 (independent) to 1.0 (highly correlated / identical).
 ## Example
 
 ```python
-from rkhs.hsic import hsic
+from independence_tests import hsic
 
 x = ...
 y = ...
