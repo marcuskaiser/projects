@@ -4,6 +4,8 @@ import unittest
 import numpy as np
 
 from independence_tests.hsic import _hsic_naive, hsic
+from independence_tests.hsic_cy import hsic as hsic_cy
+from independence_tests.dcorr_cy import dcorr
 
 
 def test_run(fn, n_samples=1000, lambda_=0.3, n_iter=10, seed=53):
@@ -29,17 +31,25 @@ class TestHSIC(unittest.TestCase):
                                                 kernel='gaussian'))
         hsic_1, t1 = test_run(lambda x, y: _hsic_naive(x, y, scaled=True,
                                                        kernel='gaussian'))
+        hsic_2, t2 = test_run(lambda x, y: hsic_cy(x, y, scale=True))
+
         assert np.allclose(hsic_0, hsic_1)
+        assert np.allclose(hsic_0, hsic_2)
         assert t0 < t1, f'{t0} > {t1}!'
         print(t0, t1, t0 / t1)
+        print(t2, t0, t2 / t0)
 
         hsic_0, t0 = test_run(lambda x, y: hsic(x, y, scaled=False,
                                                 kernel='gaussian'))
         hsic_1, t1 = test_run(lambda x, y: _hsic_naive(x, y, scaled=False,
                                                        kernel='gaussian'))
+        hsic_2, t2 = test_run(lambda x, y: hsic_cy(x, y, scale=False))
+
         assert np.allclose(hsic_0, hsic_1)
+        assert np.allclose(hsic_0, hsic_2)
         assert t0 < t1, f'{t0} > {t1}!'
         print(t0, t1, t0 / t1)
+        print(t2, t0, t2 / t0)
 
     def test_laplace(self):
         hsic_0, t0 = test_run(lambda x, y: hsic(x, y, scaled=True,
@@ -75,6 +85,15 @@ class TestHSIC(unittest.TestCase):
         assert np.allclose(hsic_0, hsic_1)
         assert t0 < t1, f'{t0} > {t1}!'
         print(t0, t1, t0 / t1)
+
+
+class TestDCorr(unittest.TestCase):
+    def test(self):
+        hsic_0, t0 = test_run(lambda x, y: dcorr(x, y, scale=True))
+        print(hsic_0, t0)
+
+        hsic_1, t1 = test_run(lambda x, y: dcorr(x, y, scale=False))
+        print(hsic_1, t1)
 
 
 if __name__ == '__main__':

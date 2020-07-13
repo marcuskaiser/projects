@@ -22,7 +22,7 @@ def _residual_loss_fn(x, y, w, loss_type, quantile):
 
 
 def _regularization_loss(w, l1_w, l2_w):
-    loss_ = 0
+    loss_ = 0.0
     d_loss_ = np.zeros_like(w)
     if l1_w > 0.0:
         loss_ += l1_w * np.abs(w).sum()
