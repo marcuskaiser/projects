@@ -13,7 +13,7 @@ np.import_array()
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef dcorr(double[:] x, double[:] y, bint scale=True):
+cpdef dcorr(DTYPE_t[:] x, DTYPE_t[:] y, bint scale=True):
     """
     Cython code for distance correlation. 
     Equivalent result to Python version:
