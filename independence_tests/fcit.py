@@ -131,22 +131,22 @@ if __name__ == '__main__':
     r = np.random.default_rng(seed=10)
     n_samples = 200
 
-    z_ = r.normal(size=n_samples)
-    x = 0.3 * r.normal(size=n_samples)
-    y = 0.5 * (1 + np.sin(2.0 * np.pi * np.arange(n_samples))) * r.normal(size=n_samples)
+    x = np.random.randn(n_samples)
+    z = 2.0 * (np.random.rand(n_samples) > 0.5) - 1.0
+    y = np.sin(3 + 3 * x * z) + 0.3 * np.random.randn(n_samples)
 
-    # y depends on z_
-    y[z_ < 0.1] += 0.3 * z_[z_ < 0.1] ** 2.0
+    # y depends on z
+    y[z < 0.1] += 0.3 * z[z < 0.1] ** 2.0
 
-    # x depends on z_
-    x[np.abs(z_) < 0.3] += z_[np.abs(z_) < 0.3]
+    # x depends on z
+    x[np.abs(z) < 0.3] += z[np.abs(z) < 0.3]
 
     # y and x depend on latent
     latent = r.normal(size=n_samples)
-    y[latent < 1.6] += latent[latent < 1.6]
+    y[latent < 0.0] += latent[latent < 0.0]
     x[latent > 0.3] += latent[latent > 0.3] * 0.3
 
     print(rfcit(y, x))
-    print(rfcit(y, z_))
-    print(rfcit(y, x, z_))
-    print(rfcit(y, z_, x))
+    print(rfcit(y, z))
+    print(rfcit(y, x, z))
+    print(rfcit(y, z, x))
