@@ -2,10 +2,11 @@ import unittest
 from functools import partial
 
 import numpy as np
+from sklearn.linear_model import Lasso
 
 from models.linear_model import LinearModel
-from models.linear_model.utils import lbfgs_fit, LOSS_TYPES
 from models.linear_model._linear import _linear_loss_fn, fit_linear_lbfgs
+from models.linear_model.utils import lbfgs_fit, LOSS_TYPES
 
 
 def compare_grad(x, y, loss_type, quantile=None, l1_w=0.0, l2_w=0.0):
@@ -171,7 +172,7 @@ class TestLowLevel(unittest.TestCase):
 
 
 class TestHighLevel(unittest.TestCase):
-    def test_ll_comparison(self):
+    def test_hl_comparison(self):
         np.random.seed(4509)
         n = 100
         x_ = np.random.normal(size=(n, 4))
@@ -204,6 +205,25 @@ class TestHighLevel(unittest.TestCase):
         np.testing.assert_allclose(
             LinearModel(loss_type='l2', scale=False).fit(x_, y_)._bias,
             fit_linear_lbfgs(x_, y_, loss_type='l2')[2], rtol=rtol)
+
+    def test_hl_large(self):
+        np.random.seed(4509)
+        n = 1000000
+        x_ = np.random.normal(size=(n, 100))
+        y_ = x_[:, 0] + 0.3 * x_[:, 3] + 0.5 * np.random.normal(size=n)
+        y_ += x_[:, 5] * (0.3 + x_[:, 6]) * 0.3
+        y_ += 0.03 * x_[:, 10]
+
+        import time
+        t0 = time.time()
+        linear_model = LinearModel(loss_type='l2', l1_w=0.01, scale=True).fit(x_, y_)
+        print('time:', time.time() - t0)
+        print(linear_model._weights.ravel())
+
+        t0 = time.time()
+        lm = Lasso(alpha=0.1).fit(x_, y_)
+        print('time:', time.time() - t0)
+        print(lm.coef_)
 
 
 if __name__ == '__main__':

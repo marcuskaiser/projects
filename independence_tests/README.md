@@ -1,5 +1,11 @@
 # Independence tests
 
+## Summary
+
+- Hilbert-Schmidt Independence Criterion (HSIC)
+- Distance Correlation (dcorr)
+- Fast Conditional Independence Test (FCIT)
+
 ## Hilbert-Schmidt Independence Criterion
 
 Exact python implementation of the **Hilbert-Schmidt Independence Criterion (HSIC)**.
@@ -69,3 +75,41 @@ out1 = dcorr(x, y, scale=True)
 ### Reference
 
 - https://en.wikipedia.org/wiki/Distance_correlation
+
+
+## Fast Conditional Independence Test
+
+Adaption of the Fast Conditional Independence Test (FCIT) using random forests.
+We call this implementation ``rfcit``.
+The test has two different modes. When only ``y`` and ``x`` are provided, we test if
+``x`` can be used to predict ``y``. This is done via comparing the prediction of ``y`` using ``x`` to
+the prediction of ``y`` using a random shuffle of ``x``. We then apply a one-sided t-test to identify if the performance
+for the individual trees improved. In order to improve robustness, this procedure is iterated three times and
+the resulting p-values are averaged.
+
+```python
+from independence_tests import rfcit
+
+x = ...
+y = ...
+
+out1 = rfcit(y=y, x=x)
+```
+
+If apart from ``x`` and ``y`` also ``z`` is provided, we compare if using ``x`` together with ``z`` improves the
+prediction of ``y`` over just using ``z`` for predicting ``y``. In other words, we ask if ``[x, z]`` is better
+than just ``z`` at predicting ``y``:
+
+```python
+from independence_tests import rfcit
+
+x = ...
+y = ...
+z = ...
+
+out1 = rfcit(y=y, x=x, z=z)
+````
+
+### Reference
+
+- https://arxiv.org/abs/1804.02747
