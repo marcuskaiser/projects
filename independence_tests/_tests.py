@@ -3,9 +3,9 @@ import unittest
 
 import numpy as np
 
-from independence_tests.hsic import _hsic_naive, hsic as hsic_py
-from independence_tests.hsic_cy import hsic as hsic_cy
-from independence_tests.dcorr_cy import dcorr
+from independence_tests.dcorr.dcorr_cy import dcorr
+from independence_tests.hsic.hsic import _hsic_naive, hsic as hsic_py
+from independence_tests.hsic.hsic_cy import hsic as hsic_cy
 
 
 def test_run(fn, n_samples=1000, lambda_=0.3, n_iter=10, seed=53):
@@ -89,11 +89,11 @@ class TestHSIC(unittest.TestCase):
 
 class TestDCorr(unittest.TestCase):
     def test(self):
-        hsic_0, t0 = test_run(lambda x, y: dcorr(x, y, scale=True))
-        print(hsic_0, t0)
+        dcorr_0, t0 = test_run(lambda x, y: dcorr(x, y, scale=True))
+        print(dcorr_0, t0)
 
-        hsic_1, t1 = test_run(lambda x, y: dcorr(x, y, scale=False))
-        print(hsic_1, t1)
+        dcorr_1, t1 = test_run(lambda x, y: dcorr(x, y, scale=False))
+        print(dcorr_1, t1)
 
 
 if __name__ == '__main__':

@@ -6,6 +6,11 @@
 - Distance Correlation (dcorr)
 - Fast Conditional Independence Test (FCIT)
 
+Note: Cython code can be compiled with
+```shell script
+python setup.py build_ext
+```
+
 ## Hilbert-Schmidt Independence Criterion
 
 Exact python implementation of the **Hilbert-Schmidt Independence Criterion (HSIC)**.
