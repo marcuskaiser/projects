@@ -59,7 +59,7 @@ class MGCV:
             >>> 'y ~ s(x1, x2) + s(x3)'
 
             The default smooth corresponds to a thin spate spline, which can
-            explictily be defined as ``s(x1, bs="ps")``. There are multiple
+            be defined explicitly as ``s(x1, bs="ps")``. There are multiple
             alternatives for the smooth terms, such as p-splines via
             ``s(x1, bs="ps")`` and adaptive smoothers ``s(x1, bs="ad")``.
             For full details (including tensor smooths and Gaussian Processes),
@@ -75,7 +75,7 @@ class MGCV:
 
         1) https://cran.r-project.org/web/packages/mgcv/
         2) https://doi.org/10.1201/9781315370279
-        3) https://people.maths.bris.ac.uk/~sw15190/mgcv/smooth-toolbox.pdf
+        3) https://www.maths.ed.ac.uk/~swood34/mgcv/smooth-toolbox.pdf
         4) https://stat.ethz.ch/R-manual/R-patched/library/mgcv/html/smooth.terms.html
         """
         self._formula = formula

@@ -2,7 +2,10 @@ import time
 import unittest
 
 import numpy as np
+from scipy.stats import pearsonr, spearmanr, t
 
+from independence_tests.corr.pearson import pearson
+from independence_tests.corr.spearman import spearman
 from independence_tests.dcorr.dcorr_cy import dcorr
 from independence_tests.hsic.hsic import _hsic_naive, hsic as hsic_py
 from independence_tests.hsic.hsic_cy import hsic as hsic_cy
@@ -94,6 +97,33 @@ class TestDCorr(unittest.TestCase):
 
         dcorr_1, t1 = test_run(lambda x, y: dcorr(x, y, scale=False))
         print(dcorr_1, t1)
+
+
+class TestLinear(unittest.TestCase):
+    def test(self):
+        n_iter = 100
+        n_samples = [10, 20, 50, 100, 200, 300, 400, 500, 800, 1000,
+                     2000, 3000, 5000, 8000, 10000, 20000, 50000, 100000]
+
+        for n in n_samples:
+            x = t.rvs(df=2, size=(n, 2))
+            x_ = x[:, 0]
+            y_ = x[:, 1] + np.sign(x[:, 0]) * np.abs(x[:, 0]) ** 1.3
+
+            np.testing.assert_allclose(pearson(x_, y_), tuple(pearsonr(x_, y_)))
+            np.testing.assert_allclose(spearman(x_, y_), tuple(spearmanr(x_, y_)))
+
+            t0 = time.time()
+            for i in range(n_iter):
+                spearman(x_, y_)
+            t1 = (time.time() - t0) / n_iter
+
+            t0 = time.time()
+            for i in range(n_iter):
+                spearmanr(x_, y_)
+            t2 = (time.time() - t0) / n_iter
+
+            assert t1 < t2
 
 
 if __name__ == '__main__':

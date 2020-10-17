@@ -8,7 +8,12 @@ In order for this code to work, an existing ``R`` version has to be installed
 (from [CRAN](https://cran.r-project.org/)).  
 Calls from ``Python`` into ``R`` are based on ``rpy2`` (see [here](https://github.com/rpy2/rpy2)).
 
-The code has been tested with ``R`` version 3.6.1 and ``rpy2`` version 3.2.6.
+The code has last been tested with ``R`` version 3.6.1 and ``rpy2`` version 3.3.6.
+
+For installation on Mac, this could be helpful:
+```shell script
+env CC=/usr/local/Cellar/gcc/9.1.0/bin/gcc-9 pip install rpy2
+```
 
 ## Examples
 
