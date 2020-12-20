@@ -18,7 +18,7 @@ def _kernel_grad(x, grad, heuristic='median'):
     else:
         raise ValueError(f'Unknown heuristic=`{heuristic}`!')
 
-    k_xy = np.exp(-squareform(d2 / (2 * sigma_sq)))
+    k_xy = np.exp(-squareform(d2 / (2.0 * sigma_sq)))
     grad = k_xy @ (grad - x / sigma_sq)
     grad += k_xy.sum(axis=1, keepdims=True) * x / sigma_sq
     return grad / x.shape[0]
@@ -59,6 +59,10 @@ class SVGD:
         Hyperparameter for Adam optimizer - Decay rate for variance.
         Smaller value means faster decay.
 
+    bandwidth_heuristic: str, optional (default='mean')
+        One of 'median' or 'mean' for calculating the bandwidth of the
+        Gaussian kernel.
+
     Notes
     -----
     References:
@@ -71,7 +75,7 @@ class SVGD:
     """
 
     def __init__(self, objective_grad, tol=1e-5, eta=1e-3, beta1=0.9,
-                 beta2=0.999):
+                 beta2=0.999, bandwidth_heuristic='mean'):
         assert eta > 0.0
         assert tol > 0.0
         assert 0.0 < beta1 < 1.0
@@ -82,6 +86,7 @@ class SVGD:
         self._eta = eta
         self._beta1 = beta1
         self._beta2 = beta2
+        self._bandwidth_heuristic = bandwidth_heuristic
 
         self._m, self._v = None, None
 
@@ -107,7 +112,8 @@ class SVGD:
         self._m, self._v = np.zeros_like(x), np.zeros_like(x)
 
         for i in range(n_iter):
-            grad = _kernel_grad(x, self._objective_grad(x))
+            grad = _kernel_grad(x, self._objective_grad(x),
+                                heuristic=self._bandwidth_heuristic)
             _adam_update_step_inplace(
                 i=i, grad=grad, m=self._m, v=self._v, beta1=self._beta1,
                 beta2=self._beta2)

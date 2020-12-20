@@ -16,12 +16,12 @@ np.import_array()
 cpdef hsic(DTYPE_t[:] x, DTYPE_t[:] y, DTYPE_t sigma_x=0.0,
            DTYPE_t sigma_y=0.0, bint scale=False):
     """
-    Cython code for HSIC (with RBF kernel). 
+    Cython code for HSIC (with RBF kernel).
     Equivalent result to Python version:
 
     >>> k_x -= np.mean(k_x, axis=1)
     >>> k_y -= np.mean(k_y, axis=1)
-    >>> 
+    >>>
     >>> trace_xy = np.einsum('ji,ij', k_x, k_y)
     >>> if scale:
     >>>     trace_xx = np.einsum('ji,ij', k_x, k_x)
