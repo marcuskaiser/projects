@@ -19,7 +19,7 @@ def test_run(fn, n_samples=1000, lambda_=0.3, n_iter=10, seed=53):
     np.random.seed(seed)
     x = np.random.randn(n_samples)
     y = np.sin(1.0 * np.random.randn(n_samples) * lambda_
-               + 2 * x * (1 - lambda_))
+               + 2 * x * (1.0 - lambda_))
     result = None
     time_ = time.time()
     for i in range(n_iter):
@@ -30,63 +30,65 @@ def test_run(fn, n_samples=1000, lambda_=0.3, n_iter=10, seed=53):
 
 class TestHSIC(unittest.TestCase):
     def test_gaussian(self):
-        hsic_0, t0 = test_run(lambda x, y: hsic_py(x, y, scale=True,
-                                                   kernel='gaussian'))
+        (hsic_0, p0), t0 = test_run(lambda x, y: hsic_py(x, y, scale=True,
+                                                         kernel='gaussian'))
         hsic_1, t1 = test_run(lambda x, y: _hsic_naive(x, y, scale=True,
                                                        kernel='gaussian'))
-        hsic_2, t2 = test_run(lambda x, y: hsic_cy(x, y, scale=True))
+        (hsic_2, p2), t2 = test_run(lambda x, y: hsic_cy(x, y, scale=True))
 
-        assert np.allclose(hsic_0, hsic_1)
-        assert np.allclose(hsic_0, hsic_2)
-        assert t0 < t1, f'{t0} > {t1}!'
+        self.assertAlmostEqual(hsic_0, hsic_1)
+        self.assertAlmostEqual(hsic_0, hsic_2)
+        self.assertAlmostEqual(p0, p2)
+        self.assertLess(t0, t1)
         print(t0, t1, t0 / t1)
         print(t2, t0, t2 / t0)
 
-        hsic_0, t0 = test_run(lambda x, y: hsic_py(x, y, scale=False,
-                                                   kernel='gaussian'))
+        (hsic_0, p0), t0 = test_run(lambda x, y: hsic_py(x, y, scale=False,
+                                                         kernel='gaussian'))
         hsic_1, t1 = test_run(lambda x, y: _hsic_naive(x, y, scale=False,
                                                        kernel='gaussian'))
-        hsic_2, t2 = test_run(lambda x, y: hsic_cy(x, y, scale=False))
+        (hsic_2, p2), t2 = test_run(lambda x, y: hsic_cy(x, y, scale=False))
 
-        assert np.allclose(hsic_0, hsic_1)
-        assert np.allclose(hsic_0, hsic_2)
-        assert t0 < t1, f'{t0} > {t1}!'
+        self.assertAlmostEqual(hsic_0, hsic_1)
+        self.assertAlmostEqual(hsic_0, hsic_2)
+        self.assertAlmostEqual(p0, p2)
+        self.assertLess(t0, t1)
         print(t0, t1, t0 / t1)
         print(t2, t0, t2 / t0)
 
     def test_laplace(self):
-        hsic_0, t0 = test_run(lambda x, y: hsic_py(x, y, scale=True,
-                                                   kernel='laplace'))
+        (hsic_0, p0), t0 = test_run(lambda x, y: hsic_py(x, y, scale=True,
+                                                         kernel='laplace'))
         hsic_1, t1 = test_run(lambda x, y: _hsic_naive(x, y, scale=True,
                                                        kernel='laplace'))
-        assert np.allclose(hsic_0, hsic_1)
-        assert t0 < t1, f'{t0} > {t1}!'
+        self.assertAlmostEqual(hsic_0, hsic_1)
+        self.assertLess(t0, t1)
         print(t0, t1, t0 / t1)
 
-        hsic_0, t0 = test_run(lambda x, y: hsic_py(x, y, scale=False,
-                                                   kernel='laplace'))
+        (hsic_0, p0), t0 = test_run(lambda x, y: hsic_py(x, y, scale=False,
+                                                         kernel='laplace'))
         hsic_1, t1 = test_run(lambda x, y: _hsic_naive(x, y, scale=False,
                                                        kernel='laplace'))
-        assert np.allclose(hsic_0, hsic_1)
-        assert t0 < t1, f'{t0} > {t1}!'
+        self.assertAlmostEqual(hsic_0, hsic_1)
+        self.assertLess(t0, t1)
         print(t0, t1, t0 / t1)
 
     def test_rational_quadratic(self):
-        hsic_0, t0 = test_run(lambda x, y: hsic_py(
+        (hsic_0, p0), t0 = test_run(lambda x, y: hsic_py(
             x, y, scale=True, kernel='rational_quadratic'))
         hsic_1, t1 = test_run(lambda x, y: _hsic_naive(
             x, y, scale=True, kernel='rational_quadratic'))
-        assert np.allclose(hsic_0, hsic_1)
-        assert t0 < t1, f'{t0} > {t1}!'
+        self.assertAlmostEqual(hsic_0, hsic_1)
+        self.assertLess(t0, t1)
         print(t0, t1, t0 / t1)
 
-        hsic_0, t0 = test_run(lambda x, y: hsic_py(
+        (hsic_0, p0), t0 = test_run(lambda x, y: hsic_py(
             x, y, scale=False, kernel='rational_quadratic'))
         hsic_1, t1 = test_run(lambda x, y: _hsic_naive(
             x, y, scale=False, kernel='rational_quadratic'))
 
-        assert np.allclose(hsic_0, hsic_1)
-        assert t0 < t1, f'{t0} > {t1}!'
+        self.assertAlmostEqual(hsic_0, hsic_1)
+        self.assertLess(t0, t1)
         print(t0, t1, t0 / t1)
 
 
