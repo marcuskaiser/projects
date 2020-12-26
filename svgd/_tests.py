@@ -2,6 +2,7 @@ import unittest
 
 import numpy as np
 from scipy.stats import random_correlation
+from scipy.linalg import norm, inv
 
 from svgd import SVGD
 
@@ -19,31 +20,94 @@ def get_normal(n_dims=10, seed=111):
 class TestSVGD(unittest.TestCase):
 
     def test_svgd_median(self):
-        n_dims = 20
-        n_samples = 300
+        n_dims = 50
+        n_samples = 50
 
         fn_grad, mu, precision_matrix = get_normal(n_dims=n_dims, seed=111)
         mu[:4] = np.array([-0.6871, 3.8010, 13.0, 3.0])
+        sigma = inv(precision_matrix).diagonal()
 
+        np.random.seed(17)
         theta0 = np.random.normal(0, 1, [n_samples, n_dims])
-        theta1 = SVGD(objective_grad=fn_grad, eta=0.05).run(theta0, n_iter=3000)
+        theta1 = SVGD(objective_grad=fn_grad, eta=0.05,
+                      bandwidth_heuristic='median').run(theta0, n_iter=3000)
 
-        print("\nsvgd_adam:\n", np.mean(theta1, axis=0), np.var(theta1, axis=0))
-        print("ground truth:\n", mu, np.linalg.inv(precision_matrix).diagonal())
+        theta_mu = np.mean(theta1, axis=0)
+        theta_var = np.var(theta1, axis=0)
+        print('\nerror:', norm(mu - theta_mu) / mu.shape[0], norm(theta_var - sigma) / sigma.shape[0])
+        print('n_samples:', theta1.shape[0])
+        print('svgd_adam:\n', theta_mu, theta_var)
+        print('ground truth:\n', mu, sigma)
 
     def test_svgd_mean(self):
-        n_dims = 20
+        n_dims = 50
+        n_samples = 50
+
+        fn_grad, mu, precision_matrix = get_normal(n_dims=n_dims, seed=111)
+        mu[:4] = np.array([-0.6871, 3.8010, 13.0, 3.0])
+        sigma = inv(precision_matrix).diagonal()
+
+        np.random.seed(17)
+        theta0 = np.random.normal(0, 1, [n_samples, n_dims])
+        theta1 = SVGD(objective_grad=fn_grad, eta=0.05,
+                      bandwidth_heuristic='mean').run(theta0, n_iter=3000)
+
+        theta_mu = np.mean(theta1, axis=0)
+        theta_var = np.var(theta1, axis=0)
+        print('\nerror:', norm(mu - theta_mu) / mu.shape[0], norm(theta_var - sigma) / sigma.shape[0])
+        print('n_samples:', theta1.shape[0])
+        print('svgd_adam:\n', theta_mu, theta_var)
+        print('ground truth:\n', mu, sigma)
+
+    def test_svgd_mean_median(self):
+        n_dims = 50
+        n_samples = 50
+
+        fn_grad, mu, precision_matrix = get_normal(n_dims=n_dims, seed=111)
+        mu[:4] = np.array([-0.6871, 3.8010, 13.0, 3.0])
+        sigma = inv(precision_matrix).diagonal()
+
+        np.random.seed(17)
+        theta0 = np.random.normal(0, 1, [n_samples, n_dims])
+        theta1 = SVGD(objective_grad=fn_grad, eta=0.05,
+                      bandwidth_heuristic='mean').run(theta0, n_iter=2500)
+
+        theta2 = SVGD(objective_grad=fn_grad, eta=0.05,
+                      bandwidth_heuristic='median').run(theta1, n_iter=500)
+
+        theta_mu = np.mean(theta2, axis=0)
+        theta_var = np.var(theta2, axis=0)
+        print('\nerror:', norm(mu - theta_mu) / mu.shape[0], norm(theta_var - sigma) / sigma.shape[0])
+        print('n_samples:', theta2.shape[0])
+        print('svgd_adam:\n', theta_mu, theta_var)
+        print('ground truth:\n', mu, sigma)
+
+    def test_svgd_mean_double(self):
+        n_dims = 50
         n_samples = 20
 
         fn_grad, mu, precision_matrix = get_normal(n_dims=n_dims, seed=111)
         mu[:4] = np.array([-0.6871, 3.8010, 13.0, 3.0])
+        sigma = inv(precision_matrix).diagonal()
 
+        np.random.seed(17)
         theta0 = np.random.normal(0, 1, [n_samples, n_dims])
         theta1 = SVGD(objective_grad=fn_grad, eta=0.05,
                       bandwidth_heuristic='mean').run(theta0, n_iter=1000)
+        for n_iter in [500, 500]:
+            theta1 = np.vstack([theta1,
+                                theta1 + np.random.normal(scale=0.1, size=theta1.shape),
+                                theta1 + np.random.normal(scale=0.1, size=theta1.shape)
+                                ])
+            theta1 = SVGD(objective_grad=fn_grad, eta=0.05,
+                          bandwidth_heuristic='mean').run(theta1, n_iter=n_iter)
 
-        print("\nsvgd_adam:\n", np.mean(theta1, axis=0), np.var(theta1, axis=0))
-        print("ground truth:\n", mu, np.linalg.inv(precision_matrix).diagonal())
+        theta_mu = np.mean(theta1, axis=0)
+        theta_var = np.var(theta1, axis=0)
+        print('\nerror:', norm(mu - theta_mu) / mu.shape[0], norm(theta_var - sigma) / sigma.shape[0])
+        print('n_samples:', theta1.shape[0])
+        print('svgd_adam:\n', theta_mu, theta_var)
+        print('ground truth:\n', mu, sigma)
 
 
 if __name__ == '__main__':
