@@ -21,7 +21,7 @@ class TestSVGD(unittest.TestCase):
 
     def test_svgd_median(self):
         n_dims = 50
-        n_samples = 50
+        n_samples = 100
 
         fn_grad, mu, precision_matrix = get_normal(n_dims=n_dims, seed=111)
         mu[:4] = np.array([-0.6871, 3.8010, 13.0, 3.0])
@@ -41,7 +41,7 @@ class TestSVGD(unittest.TestCase):
 
     def test_svgd_mean(self):
         n_dims = 50
-        n_samples = 50
+        n_samples = 200
 
         fn_grad, mu, precision_matrix = get_normal(n_dims=n_dims, seed=111)
         mu[:4] = np.array([-0.6871, 3.8010, 13.0, 3.0])
@@ -61,7 +61,7 @@ class TestSVGD(unittest.TestCase):
 
     def test_svgd_mean_median(self):
         n_dims = 50
-        n_samples = 50
+        n_samples = 100
 
         fn_grad, mu, precision_matrix = get_normal(n_dims=n_dims, seed=111)
         mu[:4] = np.array([-0.6871, 3.8010, 13.0, 3.0])

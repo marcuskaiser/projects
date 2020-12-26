@@ -3,7 +3,7 @@ import numpy as np
 from scipy.spatial.distance import pdist, squareform
 
 
-def _kernel_grad(x, grad, heuristic='median'):
+def _kernel_grad_inplace(x, grad, heuristic='median'):
     """
     Calculate SVGD update direction (gradient) :math:`\\phi^{\\star}`.
     Based on RBF kernel.
@@ -19,18 +19,42 @@ def _kernel_grad(x, grad, heuristic='median'):
         raise ValueError(f'Unknown heuristic=`{heuristic}`!')
 
     k_xy = np.exp(-squareform(d2 / sigma_sq))
-    grad = k_xy @ (grad - x / sigma_sq)
-    grad += k_xy.sum(axis=1, keepdims=True) * x / sigma_sq
-    return grad / x.shape[0]
+    grad[:] = k_xy @ (grad - x / sigma_sq)
+    grad[:] += k_xy.sum(axis=1, keepdims=True) * x / sigma_sq
+    grad[:] /= x.shape[0]
 
 
 def _adam_update_step_inplace(i, grad, m, v, beta1=0.9, beta2=0.999, eps=1e-8):
     """ Adam update routine with inplace updates. Modifies grad, m and v. """
-    m[:] = beta1 * m + (1 - beta1) * grad
-    v[:] = beta2 * v + (1 - beta2) * grad ** 2
-    m_adj = m / (1 - beta1 ** (i + 1))
-    v_adj = v / (1 - beta2 ** (i + 1))
+    m[:] = beta1 * m + (1.0 - beta1) * grad
+    v[:] = beta2 * v + (1.0 - beta2) * grad ** 2
+    m_adj = m / (1.0 - beta1 ** (i + 1))
+    v_adj = v / (1.0 - beta2 ** (i + 1))
     grad[:] = m_adj / (np.sqrt(v_adj) + eps)
+
+
+def svgd(x_init,
+         objective_grad,
+         n_iter,
+         tol=1e-5,
+         eta=1e-3,
+         beta1=0.9,
+         beta2=0.999,
+         bandwidth_heuristic='mean'):
+    x = x_init.copy()
+    m, v = np.zeros_like(x), np.zeros_like(x)
+
+    for i in range(n_iter):
+        grad = objective_grad(x)
+        _kernel_grad_inplace(
+            x=x, grad=grad, heuristic=bandwidth_heuristic)
+        _adam_update_step_inplace(
+            i=i, grad=grad, m=m, v=v, beta1=beta1, beta2=beta2)
+
+        if np.abs(grad).mean() < tol:
+            break
+        x += eta * grad
+    return x
 
 
 class SVGD:
@@ -108,17 +132,11 @@ class SVGD:
             Estimate of the solution.
         """
         assert n_iter > 0
-        x = x_init.copy()
-        self._m, self._v = np.zeros_like(x), np.zeros_like(x)
-
-        for i in range(n_iter):
-            grad = _kernel_grad(x, self._objective_grad(x),
-                                heuristic=self._bandwidth_heuristic)
-            _adam_update_step_inplace(
-                i=i, grad=grad, m=self._m, v=self._v, beta1=self._beta1,
-                beta2=self._beta2)
-
-            if np.abs(grad).mean() < self._tol:
-                break
-            x += self._eta * grad
-        return x
+        return svgd(x_init=x_init,
+                    objective_grad=self._objective_grad,
+                    n_iter=n_iter,
+                    tol=self._tol,
+                    eta=self._eta,
+                    beta1=self._beta1,
+                    beta2=self._beta2,
+                    bandwidth_heuristic=self._bandwidth_heuristic)
