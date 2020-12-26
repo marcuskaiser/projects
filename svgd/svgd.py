@@ -6,7 +6,7 @@ from scipy.spatial.distance import pdist, squareform
 def _kernel_grad_inplace(x, grad, heuristic='mean'):
     """
     Calculate SVGD update direction (gradient) :math:`\\phi^{\\star}`.
-    Based on RBF kernel.
+    Based on RBF kernel. Modifies grad.
     """
     if x.shape[0] == 1:
         return grad
