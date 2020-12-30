@@ -18,7 +18,6 @@ def get_normal(n_dims=10, seed=111):
 
 
 class TestSVGD(unittest.TestCase):
-
     def test_svgd_median(self):
         n_dims = 50
         n_samples = 100

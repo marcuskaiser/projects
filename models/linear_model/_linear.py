@@ -3,7 +3,7 @@ from functools import partial
 import numpy as np
 
 from models.linear_model.utils import (_regularization_loss, _residual_loss_fn,
-                                       lbfgs_fit, LOSS_TYPES, scale_std)
+                                       check_and_prepare, lbfgs_fit, postprocess_parameters)
 
 
 def _linear_loss_fn(w, x, y, loss_type, quantile, l1_w, l2_w):
@@ -20,9 +20,16 @@ def _linear_loss_fn(w, x, y, loss_type, quantile, l1_w, l2_w):
     return loss_, d_loss_.ravel()
 
 
-def fit_linear_lbfgs(x, y, loss_type='l2', quantile=None,
-                     l1_w=0.0, l2_w=0.0, clip_weights=0.025, fit_bias=True,
-                     scale=True, copy_xy=True):
+def fit_linear_lbfgs(x,
+                     y,
+                     loss_type='l2',
+                     quantile=None,
+                     l1_w=0.0,
+                     l2_w=0.0,
+                     clip_weights=0.025,
+                     fit_bias=True,
+                     scale=True,
+                     copy_xy=True):
     """
     Simple liner model fitting routine. This function is not particularly fast,
     but flexible in the sense that it can be used to fit a linear model with
@@ -40,7 +47,7 @@ def fit_linear_lbfgs(x, y, loss_type='l2', quantile=None,
         Loss function to be used for optimization.
 
     quantile : float or None, (default=None)
-        Quantile in range (0, 1). Only used when ``loss_type = 'quantile'``.
+        Quantile in range (0, 1). Only used for ``loss_type='quantile'``.
 
     l1_w : float, optional (default=0.0)
         L1 regularization weight.
@@ -52,13 +59,13 @@ def fit_linear_lbfgs(x, y, loss_type='l2', quantile=None,
         If  `clip_weights > 0.0`, weights with
         ``abs(weight) < clip_weights * max(abs(weights))`` are set to zero.
 
-    fit_bias : bool (default=True)
+    fit_bias : bool, optional (default=True)
         If true, a bias term is fit.
 
-    scale : bool (default=True)
+    scale : bool, optional (default=True)
         If true, the data is scaled to unit variance.
 
-    copy_xy : bool (default=True)
+    copy_xy : bool, optional (default=True)
         If true, the x and y arrays will be copied.
 
     Returns
@@ -74,46 +81,32 @@ def fit_linear_lbfgs(x, y, loss_type='l2', quantile=None,
         Bias term.
     """
     # Check in puts and reshape data to 2d:
-    assert loss_type.lower() in LOSS_TYPES, \
-        f'Expected loss_type in {LOSS_TYPES}. Got: loss_type={loss_type}!'
-    if loss_type == 'quantile':
-        assert quantile is not None and 0.0 < quantile < 1.0, \
-            f'Expected 0.0 < quantile < 1.0. Got: quantile={quantile}!'
-
-    assert x.shape[0] == y.shape[0], f'{x.shape[0]} != {y.shape[0]}'
-    assert x.ndim == 2
-
-    if copy_xy is True:
-        x = x.copy()
-        y = y.copy()
-    if y.ndim == 1:
-        y = y[:, None]
-    else:
-        assert y.ndim == 2
-
-    # Scale data and optionally adjust for bias term:
-    x, x_std = scale_std(x, scale=scale)
-    y, y_std = scale_std(y, scale=scale)
-    if fit_bias is True:
-        x = np.hstack((x, np.ones((x.shape[0], 1))))
+    x, x_std, y, y_std = check_and_prepare(x=x,
+                                           y=y,
+                                           loss_type=loss_type,
+                                           quantile=quantile,
+                                           fit_bias=fit_bias,
+                                           scale=scale, copy_xy=copy_xy)
 
     # Solve convex optimization problem:
-    loss = partial(_linear_loss_fn, x=x, y=y, loss_type=loss_type,
-                   quantile=quantile, l1_w=l1_w, l2_w=l2_w)
+    loss_fn = partial(_linear_loss_fn,
+                      x=x,
+                      y=y,
+                      loss_type=loss_type,
+                      quantile=quantile,
+                      l1_w=l1_w,
+                      l2_w=l2_w)
+
     w_init = np.zeros((x.shape[1], y.shape[1]))
     if fit_bias is True:
         w_init[-1, :] = y.mean(axis=0)
-    w_star = lbfgs_fit(loss_fn=loss, w_init=w_init)
+
+    w_star = lbfgs_fit(loss_fn=loss_fn, w_init=w_init)
 
     # Adjust bias terms, weight clipping and re-scaling of weights:
-    if fit_bias is True:
-        bias = y_std * w_star[-1, :]
-        w_star = w_star[:-1, :]
-    else:
-        bias = np.zeros(y.shape[1])
-
-    if clip_weights > 0.0:
-        w_max = np.abs(w_star).max()
-        w_star[np.abs(w_star) < w_max * clip_weights] = 0.0
-    w_orig = w_star * y_std / x_std[:, None]
+    bias, w_orig, w_star = postprocess_parameters(w_star=w_star,
+                                                  x_std=x_std,
+                                                  y_std=y_std,
+                                                  fit_bias=fit_bias,
+                                                  clip_weights=clip_weights)
     return w_orig, w_star, bias

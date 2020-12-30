@@ -7,6 +7,17 @@ def _kernel_grad_inplace(x, grad, heuristic='mean'):
     """
     Calculate SVGD update direction (gradient) :math:`\\phi^{\\star}`.
     Based on RBF kernel. Modifies grad.
+
+    Parameters
+    ----------
+    x : array-like, shape=(n_samples, n_parameters)
+        Initial estimate for the distribution.
+
+    grad: array-like, shape=(n_samples, n_parameters)
+        Gradient of the objective function.
+
+    heuristic: str, optional (default='mean')
+        Heuristic for the kernel. Can be one of `mean` and `median`.
     """
     if x.shape[0] == 1:
         return grad
@@ -33,14 +44,14 @@ def _adam_update_step_inplace(i, grad, m, v, beta1=0.9, beta2=0.999, eps=1e-8):
     grad[:] = m_adj / (np.sqrt(v_adj) + eps)
 
 
-def svgd(x_init,
-         objective_grad,
-         n_iter,
-         tol=1e-5,
-         eta=1e-3,
-         beta1=0.9,
-         beta2=0.999,
-         bandwidth_heuristic='mean'):
+def svgd_adam(x_init,
+              objective_grad,
+              n_iter,
+              bandwidth_heuristic='mean',
+              eta=1e-3,
+              tol=1e-5,
+              beta1=0.9,
+              beta2=0.999):
     x = x_init.copy()
     m, v = np.zeros_like(x), np.zeros_like(x)
 
@@ -67,11 +78,15 @@ class SVGD:
     objective_grad : callable
         Gradient of the objective function.
 
+    bandwidth_heuristic: str, optional (default='mean')
+        One of 'median' or 'mean' for calculating the bandwidth of the
+        Gaussian kernel.
+
     eta : float, optional (default=1e-3)
-        Hyperparameter for Adam optimizer - Learning rate.
+        Hyperparameter for optimizer - Learning rate.
 
     tol : float, optional (default=1e-5)
-        Hyperparameter for Adam optimizer - Parameter for early stopping.
+        Hyperparameter for optimizer - Parameter for early stopping.
         Early stopping is applied when the mean absolute difference between
         two steps is less than this threshold.
 
@@ -82,10 +97,6 @@ class SVGD:
     beta2 : float, optional (default=0.999)
         Hyperparameter for Adam optimizer - Decay rate for variance.
         Smaller value means faster decay.
-
-    bandwidth_heuristic: str, optional (default='mean')
-        One of 'median' or 'mean' for calculating the bandwidth of the
-        Gaussian kernel.
 
     Notes
     -----
@@ -98,21 +109,23 @@ class SVGD:
     5) http://proceedings.mlr.press/v48/chwialkowski16
     """
 
-    def __init__(self, objective_grad, tol=1e-5, eta=1e-3, beta1=0.9,
-                 beta2=0.999, bandwidth_heuristic='mean'):
+    def __init__(self, objective_grad,
+                 bandwidth_heuristic='mean',
+                 eta=1e-3,
+                 tol=1e-5,
+                 beta1=0.9,
+                 beta2=0.999):
         assert eta > 0.0
         assert tol > 0.0
         assert 0.0 < beta1 < 1.0
         assert 0.0 < beta2 < 1.0
 
         self._objective_grad = objective_grad
-        self._tol = tol
+        self._bandwidth_heuristic = bandwidth_heuristic
         self._eta = eta
+        self._tol = tol
         self._beta1 = beta1
         self._beta2 = beta2
-        self._bandwidth_heuristic = bandwidth_heuristic
-
-        self._m, self._v = None, None
 
     def run(self, x_init, n_iter=1000):
         """
@@ -132,11 +145,11 @@ class SVGD:
             Estimate of the solution.
         """
         assert n_iter > 0
-        return svgd(x_init=x_init,
-                    objective_grad=self._objective_grad,
-                    n_iter=n_iter,
-                    tol=self._tol,
-                    eta=self._eta,
-                    beta1=self._beta1,
-                    beta2=self._beta2,
-                    bandwidth_heuristic=self._bandwidth_heuristic)
+        return svgd_adam(x_init=x_init,
+                         objective_grad=self._objective_grad,
+                         n_iter=n_iter,
+                         tol=self._tol,
+                         eta=self._eta,
+                         beta1=self._beta1,
+                         beta2=self._beta2,
+                         bandwidth_heuristic=self._bandwidth_heuristic)

@@ -6,6 +6,7 @@ from sklearn.linear_model import Lasso
 
 from models.linear_model import LinearModel
 from models.linear_model._linear import _linear_loss_fn, fit_linear_lbfgs
+from models.linear_model._linear_svgd import fit_linear_test
 from models.linear_model.utils import lbfgs_fit, LOSS_TYPES
 
 
@@ -208,7 +209,7 @@ class TestHighLevel(unittest.TestCase):
 
     def test_hl_large(self):
         np.random.seed(4509)
-        n = 1000000
+        n = 1_000_000
         x_ = np.random.normal(size=(n, 100))
         y_ = x_[:, 0] + 0.3 * x_[:, 3] + 0.5 * np.random.normal(size=n)
         y_ += x_[:, 5] * (0.3 + x_[:, 6]) * 0.3
