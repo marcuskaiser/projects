@@ -30,8 +30,8 @@ def _kernel_grad_inplace(x, grad, heuristic='mean'):
         raise ValueError(f'Unknown heuristic=`{heuristic}`!')
 
     k_xy = np.exp(-squareform(d2 / sigma_sq))
-    grad[:] = k_xy @ (grad - x / sigma_sq)
-    grad[:] += k_xy.sum(axis=1, keepdims=True) * x / sigma_sq
+    grad[:] = k_xy @ (grad - x * (2.0 / sigma_sq))
+    grad[:] += k_xy.sum(axis=1, keepdims=True) * x * (2.0 / sigma_sq)
     grad[:] /= x.shape[0]
 
 
