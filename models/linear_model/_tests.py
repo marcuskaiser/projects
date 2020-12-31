@@ -1,12 +1,12 @@
 import unittest
 from functools import partial
+import time
 
 import numpy as np
 from sklearn.linear_model import Lasso
 
 from models.linear_model import LinearModel
 from models.linear_model._linear import _linear_loss_fn, fit_linear_lbfgs
-from models.linear_model._linear_svgd import fit_linear_test
 from models.linear_model.utils import lbfgs_fit, LOSS_TYPES
 
 
@@ -215,7 +215,6 @@ class TestHighLevel(unittest.TestCase):
         y_ += x_[:, 5] * (0.3 + x_[:, 6]) * 0.3
         y_ += 0.03 * x_[:, 10]
 
-        import time
         t0 = time.time()
         linear_model = LinearModel(loss_type='l2', l1_w=0.01, scale=True).fit(x_, y_)
         print('time:', time.time() - t0)
