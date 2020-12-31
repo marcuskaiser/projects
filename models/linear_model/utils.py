@@ -87,4 +87,4 @@ def postprocess_parameters(w_star, x_std, y_std, fit_bias, clip_weights):
         w_max = np.abs(w_star).max()
         w_star[np.abs(w_star) < w_max * clip_weights] = 0.0
     w_orig = w_star * y_std / x_std[:, None]
-    return bias, w_orig, w_star
+    return w_orig, w_star, bias

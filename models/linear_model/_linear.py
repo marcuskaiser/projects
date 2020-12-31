@@ -104,9 +104,8 @@ def fit_linear_lbfgs(x,
     w_star = lbfgs_fit(loss_fn=loss_fn, w_init=w_init)
 
     # Adjust bias terms, weight clipping and re-scaling of weights:
-    bias, w_orig, w_star = postprocess_parameters(w_star=w_star,
-                                                  x_std=x_std,
-                                                  y_std=y_std,
-                                                  fit_bias=fit_bias,
-                                                  clip_weights=clip_weights)
-    return w_orig, w_star, bias
+    return postprocess_parameters(w_star=w_star,
+                                  x_std=x_std,
+                                  y_std=y_std,
+                                  fit_bias=fit_bias,
+                                  clip_weights=clip_weights)
