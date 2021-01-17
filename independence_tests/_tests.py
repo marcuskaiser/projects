@@ -101,7 +101,7 @@ class TestDCorr(unittest.TestCase):
         print(dcorr_1, t1)
 
 
-class TestLinear(unittest.TestCase):
+class TestCorr(unittest.TestCase):
     def test(self):
         n_iter = 100
         n_samples = [10, 20, 50, 100, 200, 300, 400, 500, 800, 1000,
@@ -112,8 +112,10 @@ class TestLinear(unittest.TestCase):
             x_ = x[:, 0]
             y_ = x[:, 1] + np.sign(x[:, 0]) * np.abs(x[:, 0]) ** 1.3
 
-            np.testing.assert_allclose(pearson(x_, y_), tuple(pearsonr(x_, y_)))
-            np.testing.assert_allclose(spearman(x_, y_), tuple(spearmanr(x_, y_)))
+            np.testing.assert_allclose(pearson(x_, y_),
+                                       tuple(pearsonr(x_, y_)))
+            np.testing.assert_allclose(spearman(x_, y_),
+                                       tuple(spearmanr(x_, y_)))
 
             t0 = time.time()
             for i in range(n_iter):
@@ -125,7 +127,15 @@ class TestLinear(unittest.TestCase):
                 spearmanr(x_, y_)
             t2 = (time.time() - t0) / n_iter
 
-            assert t1 < t2
+            self.assertLess(t1, t2)
+
+            if n > 20:
+                x[:10, :] = 0.0
+
+                np.testing.assert_allclose(pearson(x_, y_),
+                                           tuple(pearsonr(x_, y_)))
+                np.testing.assert_allclose(spearman(x_, y_),
+                                           tuple(spearmanr(x_, y_)))
 
 
 if __name__ == '__main__':
