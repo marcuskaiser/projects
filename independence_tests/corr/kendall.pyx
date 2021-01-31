@@ -38,7 +38,7 @@ def kendall_window(double[:] x, double[:] y, Py_ssize_t window_size=10):
     cdef Py_ssize_t j
 
     for i in range(window_size, m):
-        for j in range(i-window_size, i):
+        for j in range(i - window_size, i):
             c = (x[i] - x[j]) * (y[i] - y[j])
             if c != 0.0:
                 sign += c / fabs(c)
