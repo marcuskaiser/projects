@@ -4,6 +4,7 @@ import unittest
 import numpy as np
 from scipy.stats import pearsonr, spearmanr, t
 
+from independence_tests import mutual_information
 from independence_tests.corr.pearson import pearson
 from independence_tests.corr.spearman import spearman
 from independence_tests.dcorr.dcorr_cy import dcorr

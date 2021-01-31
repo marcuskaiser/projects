@@ -24,7 +24,7 @@ def _get_bins(bins, x, y):
     """
     if bins is None:
         corr = pearson(x, y)[0]
-        if abs(corr) < 1.0:
+        if abs(corr) < 0.99:
             # optimal number of bins (Hacine-Gharbi and Ravier (2018))
             ratio_ = (24.0 * x.shape[0]) / (1.0 - corr ** 2)
             bins_ = (0.5 * (1.0 + (1.0 + ratio_) ** 0.5)) ** 0.5

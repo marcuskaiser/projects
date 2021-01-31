@@ -12,5 +12,6 @@ def pearson(x, y):
     y = y - y.mean()
 
     r = x.dot(y) / norm(x) / norm(y)
+    r = min(1.0, max(0.0, r))
     p = pearson_p_value(r, x.shape[0])
     return r, p

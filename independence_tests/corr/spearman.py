@@ -19,5 +19,6 @@ def spearman(x, y):
     y_rank -= mean
 
     r = x_rank.dot(y_rank) / norm(x_rank) / norm(y_rank)
+    r = min(1.0, max(0.0, r))
     p_value = pearson_p_value(r, x.shape[0])
     return r, p_value

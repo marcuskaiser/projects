@@ -13,7 +13,8 @@ def mutual_information(x, y, bins=None, rank=False):
     x, y = _check_xy(x, y)
 
     if rank is True:
-        x, y = fast_rank(x, y)
+        x = fast_rank(x)
+        y = fast_rank(y)
 
     bins = _get_bins(bins=bins, x=x, y=y)
     count_xy = np.lib.histogramdd([x, y], bins)[0]
