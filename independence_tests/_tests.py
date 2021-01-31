@@ -2,14 +2,11 @@ import time
 import unittest
 
 import numpy as np
-from scipy.stats import pearsonr, spearmanr, t
+from scipy.stats import kendalltau, pearsonr, spearmanr, t
 
-from independence_tests import mutual_information
-from independence_tests.corr.pearson import pearson
-from independence_tests.corr.spearman import spearman
-from independence_tests.dcorr.dcorr_cy import dcorr
+from independence_tests import (pearson, spearman, dcorr, hsic as hsic_cy,
+                                kendall, mutual_information)
 from independence_tests.hsic.hsic import _hsic_naive, hsic as hsic_py
-from independence_tests.hsic.hsic_cy import hsic as hsic_cy
 
 
 def test_run(fn, n_samples=1000, lambda_=0.3, n_iter=10, seed=53):
@@ -117,6 +114,8 @@ class TestCorr(unittest.TestCase):
                                        tuple(pearsonr(x_, y_)))
             np.testing.assert_allclose(spearman(x_, y_),
                                        tuple(spearmanr(x_, y_)))
+            np.testing.assert_allclose(kendall(x_, y_),
+                                       kendalltau(x_, y_)[0])
 
             t0 = time.time()
             for i in range(n_iter):

@@ -12,6 +12,8 @@ ext_modules = cythonize([
               include_dirs=[np.get_include()]),
     Extension("*", sources=["./dcorr/*.pyx"],
               include_dirs=[np.get_include()]),
+    Extension("*", sources=["./corr/*.pyx"],
+              include_dirs=[np.get_include()]),
 ])
 
 setup(name='*',
